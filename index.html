@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update Fee Item</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    select, input { margin: 10px; padding: 8px; width: 250px; }
+    button { padding: 10px 20px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+    button:hover { background: #45a049; }
+    .message { margin-top: 20px; font-weight: bold; }
+    .table-container { width: 100%; overflow-x: auto; margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; min-width: 800px; }
+    th, td { padding: 8px; text-align: center; border: 1px solid #ddd; }
+    th { background-color: #f2f2f2; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    tr:hover { background-color: #f1f1f1; }
+  </style>
+</head>
+<body>
+  <h2>Update Fee Item</h2>
+  <form id="feeForm">
+    <select id="grade" required>
+      <option value="">Select Grade</option>
+      <option>PLAYGROUP</option>
+      <option>PP1</option>
+      <option>PP2</option>
+      <option>GRADE 1</option>
+      <option>GRADE 2</option>
+      <option>GRADE 3</option>
+      <option>GRADE 4</option>
+      <option>GRADE 5</option>
+      <option>GRADE 6</option>
+      <option>GRADE 7</option>
+      <option>GRADE 8</option>
+      <option>GRADE 9</option>
+      <option>GRADE 10</option>
+      <option>GRADE 11</option>
+      <option>GRADE 12</option>
+    </select><br>
+
+    <select id="term" required>
+      <option value="">Select Term</option>
+      <option>1</option>
+      <option>2</option>
+      <option>3</option>
+    </select><br>
+
+    <select id="feeType" required>
+      <option value="">Select Fee Type</option>
+      <option>Tuition</option>
+      <option>Fee</option>
+      <option>BookFund</option>
+      <option>Computer</option>
+      <option>Lunch</option>
+      <option>Porridge</option>
+      <option>Exam</option>
+      <option>Diary</option>
+      <option>Assessment</option>
+      <option>Reams</option>
+      <option>Stationery</option>
+      <option>Activity</option>
+      <option>Admission</option>
+      <option>Interview</option>
+      <option>Track suit</option>
+      <option>Sweater</option>
+    </select><br>
+
+    <input type="number" id="newAmount" placeholder="Enter New Amount" required><br>
+
+    <button type="submit">Update Fee</button>
+  </form>
+
+  <div class="message" id="message"></div>
+
+  <h2>Current Fee Structure</h2>
+  <div class="table-container">
+    <div id="feeTable"></div>
+  </div>
+
+  <script>
+  const scriptUrl = 'https://script.google.com/macros/s/AKfycbyyUKao0VwnIWz_awGHVMHE7ozsJY2wERpxkTuetx1_Jfo_TeC_okfLUAe7eXNek6Q_/exec'; // Replace with your deployed web app URL
+
+  const form = document.getElementById('feeForm');
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    document.getElementById('message').style.color = 'red';
+    document.getElementById('message').textContent = 'Please wait! Updating...';
+
+    const grade = document.getElementById('grade').value;
+    const term = document.getElementById('term').value;
+    const feeType = document.getElementById('feeType').value;
+    const newAmount = document.getElementById('newAmount').value;
+
+    fetch(`${scriptUrl}?action=updateFee&grade=${encodeURIComponent(grade)}&term=${encodeURIComponent(term)}&feeType=${encodeURIComponent(feeType)}&newAmount=${encodeURIComponent(newAmount)}`)
+      .then(response => response.text())
+      .then(responseText => {
+        if (responseText === "Update successful!") {
+          document.getElementById('message').style.color = 'green';
+          loadFeeTable(); // Reload the table after update
+        } else {
+          document.getElementById('message').style.color = 'red';
+        }
+        document.getElementById('message').textContent = responseText;
+        form.reset();
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('message').style.color = 'red';
+        document.getElementById('message').textContent = 'An error occurred.';
+      });
+  });
+
+  function loadFeeTable() {
+    fetch(`${scriptUrl}?action=getFeeStructure`)
+      .then(response => response.json())
+      .then(data => {
+        console.log('Fetched Data:', data); // Log the fetched data for debugging
+
+        let tableHtml = '<table border="1">';
+        // Assuming the first row contains headers
+        data.forEach(function(row, rowIndex) {
+          tableHtml += '<tr>';
+          row.forEach(function(cell) {
+            tableHtml += rowIndex === 0 ? `<th>${cell}</th>` : `<td>${cell}</td>`;
+          });
+          tableHtml += '</tr>';
+        });
+        tableHtml += '</table>';
+        document.getElementById('feeTable').innerHTML = tableHtml;
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('feeTable').innerHTML = '<p style="color:red;">Failed to load table.</p>';
+      });
+  }
+
+  window.onload = loadFeeTable;
+</script>
+
+</body>
+</html>
